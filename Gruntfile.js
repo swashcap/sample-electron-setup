@@ -15,6 +15,7 @@ module.exports = function(grunt) {
         config: config,
         pkg: pkg,
 
+        clean: ['<%= config.dist %>'],
         electron: {
             osxBuild: {
                 options: {
@@ -70,7 +71,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['exec:electron']);
     grunt.registerTask('debug', ['exec:debug']);
-    grunt.registerTask('build', ['electron']);
+    grunt.registerTask('build', ['clean', 'electron']);
     grunt.registerTask('test', ['tape']);
     grunt.registerTask('lint', ['eslint']);
 };
