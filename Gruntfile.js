@@ -8,6 +8,16 @@ module.exports = function(grunt) {
         name: 'Sample Electron Setup',
     };
     var pkg = grunt.file.readJSON('package.json');
+    /**
+     * Must be a valid Electron tag.
+     *
+     * The 'electron-prebuilt' package's version matches the 'electron' version.
+     * Use it.
+     *
+     * @{@link  https://github.com/maxogden/electron-packager}
+     * @{@link  https://github.com/atom/electron/releases}
+     */
+    var electronVersion = grunt.file.readJSON('node_modules/electron-prebuilt/package.json').version;
 
     require('load-grunt-tasks')(grunt);
 
@@ -41,7 +51,7 @@ module.exports = function(grunt) {
                     overwrite: true,
                     platform: 'darwin',
                     prune: false,
-                    version: '0.31.1',
+                    version: electronVersion,
                 },
             },
         },
