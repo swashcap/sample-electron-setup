@@ -1,11 +1,14 @@
 'use strict';
 
+var escape = require('escape-string-regexp'); // eslint-disable-line no-unused-vars
+
 module.exports = function(grunt) {
     var config = {
         app: 'app',
         debugPort: 5858,
         dist: 'dist',
         name: 'Sample Electron Setup',
+        tmp: '.tmp',
     };
     var pkg = grunt.file.readJSON('package.json');
     /**
@@ -19,13 +22,42 @@ module.exports = function(grunt) {
      */
     var electronVersion = grunt.file.readJSON('node_modules/electron-prebuilt/package.json').version;
 
+    /**
+     * Ignore files when building Electron app for distribution.
+     *
+     * @todo  Ensure no application file has 'test' in its name.
+     */
+    var electronIgnore = new RegExp([config.app, 'DS_Store', 'editorconfig',
+        'eslintrc', 'gitignore', 'Gruntfile.js', 'LICENSE', 'README.md',
+        'test'].concat(Object.keys(pkg.devDependencies)).join('|')
+    );
+
+    require('time-grunt')(grunt);
     require('load-grunt-tasks')(grunt);
 
     grunt.initConfig({
         config: config,
         pkg: pkg,
 
-        clean: ['<%= config.dist %>'],
+        clean: ['<%= config.tmp %>', '<%= config.dist %>'],
+        cleanempty: {
+            src: ['<%= config.tmp %>/**/*'],
+        },
+        copy: {
+            app: {
+                files: [{
+                    cwd: '<%= config.app %>/main/',
+                    expand: true,
+                    dest: '<%= config.tmp %>/main/',
+                    src: ['**'],
+                }, {
+                    cwd: '<%= config.app %>/render/',
+                    expand: true,
+                    dest: '<%= config.tmp %>/render/',
+                    src: ['**', '!**/*.{js,jsx,json}'],
+                }],
+            },
+        },
         electron: {
             osxBuild: {
                 options: {
@@ -39,13 +71,7 @@ module.exports = function(grunt) {
                      * @todo  Figure out icon file format
                      */
                     icon: null,
-                    /**
-                     * @todo  Confirm no file names contain 'test'
-                     */
-                    ignore: new RegExp(
-                        ['DS_Store', 'editorconfig', 'eslintrc', 'Gruntfile',
-                        'README', 'test'].concat(Object.keys(pkg.devDependencies)).join('|')
-                    ),
+                    ignore: electronIgnore,
                     name: '<%= config.name %>',
                     out: '<%= config.dist %>',
                     overwrite: true,
@@ -56,7 +82,7 @@ module.exports = function(grunt) {
             },
         },
         eslint: {
-            target: ['{main,render,test}/**/*.js', 'Gruntfile.js'],
+            target: ['{<%= config.app %>,test}/**/*.js', 'Gruntfile.js'],
         },
         exec: {
             debug: {
@@ -67,7 +93,43 @@ module.exports = function(grunt) {
                 ].join(' '),
             },
             electron: {
-                command: 'node_modules/.bin/electron .',
+                command: 'node_modules/.bin/electron . --development',
+            },
+            webpackBuild: {
+                command: 'NODE_ENV=production node_modules/.bin/webpack -p --colors --config webpack.config.production.js',
+            },
+            webpackDevServer: {
+                command: 'NODE_ENV=development node webpack.server.js',
+            },
+        },
+        replace: {
+            options: {
+                prefix: '"main": "',
+                preservePrefix: true,
+            },
+            app: {
+                files: [{
+                    expand: true,
+                    src: ['package.json'],
+                }],
+                options: {
+                    patterns: [{
+                        match: '<%= escape(config.app) %>',
+                        replacement: '<%= config.tmp %>',
+                    }],
+                },
+            },
+            tmp: {
+                files: [{
+                    expand: true,
+                    src: ['package.json'],
+                }],
+                options: {
+                    patterns: [{
+                        match: '<%= escape(config.tmp) %>',
+                        replacement: '<%= config.app %>',
+                    }],
+                },
             },
         },
         tape: {
@@ -80,8 +142,17 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('default', ['exec:electron']);
+    grunt.registerTask('webpack', ['exec:webpackDevServer']);
     grunt.registerTask('debug', ['exec:debug']);
-    grunt.registerTask('build', ['clean', 'electron']);
+    grunt.registerTask('build', [
+        'clean',
+        'exec:webpackBuild',
+        'copy:app',
+        'cleanempty',
+        'replace:app',
+        'electron',
+        'replace:tmp',
+    ]);
     grunt.registerTask('test', ['tape']);
     grunt.registerTask('lint', ['eslint']);
 };

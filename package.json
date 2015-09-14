@@ -6,19 +6,33 @@
   "author": "Cory Reed <swashcap@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "babel-eslint": "^4.1.0",
-    "electron-prebuilt": "^0.31.1",
-    "eslint": "^1.3.1",
-    "eslint-config-airbnb": "0.0.8",
-    "eslint-plugin-react": "^3.3.0",
+    "babel-core": "^5.8.24",
+    "babel-eslint": "^4.1.2",
+    "babel-loader": "^5.3.2",
+    "electron-prebuilt": "^0.31.2",
+    "escape-string-regexp": "^1.0.3",
+    "eslint": "^1.4.1",
+    "eslint-plugin-react": "^3.3.2",
     "grunt": "^0.4.5",
+    "grunt-cleanempty": "^1.0.3",
     "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-copy": "^0.8.1",
     "grunt-electron": "^2.0.0",
     "grunt-eslint": "^17.1.0",
     "grunt-exec": "^0.4.6",
+    "grunt-replace": "^0.11.0",
     "grunt-run": "^0.4.0",
     "grunt-tape": "0.0.2",
     "load-grunt-tasks": "^3.2.0",
-    "tape": "^4.2.0"
+    "react-hot-loader": "^1.3.0",
+    "tape": "^4.2.0",
+    "time-grunt": "^1.2.1",
+    "webpack": "^1.12.1",
+    "webpack-dev-server": "^1.10.1"
+  },
+  "dependencies": {
+    "babel-core": "^5.8.23",
+    "nomnom": "^1.8.1",
+    "react": "^0.13.3"
   }
 }
